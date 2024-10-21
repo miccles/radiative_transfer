@@ -53,8 +53,14 @@ for i in range(len(num_list)):
     hash_table[num_list[i]] = i
 
 for i in range(len(num_list)):
-    if target - num_list[i] in hash_table:
+    if target - num_list[i] in hash_table and hash_table[target - num_list[i]] != i:
         print([i, hash_table[target - num_list[i]]])
         break
 
 print(hash_table)
+
+chars = ['d1', 'd2', 'd3', 'd4']
+
+for i in range(len(chars)):
+    units = [char for char in chars if char != chars[i]]
+    print(units)
