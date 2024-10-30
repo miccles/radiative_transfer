@@ -85,30 +85,35 @@ class MonteCarloSimulation:
     def get_collisions(self):
         return [photon.collisions for photon in self.photons]
 
-    def select_random_photon(self):
-        return np.random.choice(self.photons)
+    def select_random_photon(self, num=1):
+        if num > self.N:
+            raise ValueError("Number of photons to select is greater than total number of photons")
+        return np.random.choice(self.photons, num)
 
-    def plot_trajectory(self, photon):
-        trajectory = np.array(photon.trajectory)
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot(trajectory[:, 0], trajectory[:, 1], trajectory[:, 2])
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-
-        # Add a red dot at the origin
-        ax.scatter(0, 0, 0, color='red', s=20)
-        
-        # Plot a transparent sphere of radius R
-        u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
-        x = self.R * np.cos(u) * np.sin(v)
-        y = self.R * np.sin(u) * np.sin(v)
-        z = self.R * np.cos(v)
-        ax.plot_wireframe(x, y, z, color="gray", alpha=0.3)
-        
-
-        plt.show()
+    def plot_trajectory(self, photons):
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            colors = plt.cm.jet(np.linspace(0, 1, len(photons)))
+            
+            for photon, color in zip(photons, colors):
+                trajectory = np.array(photon.trajectory)
+                ax.plot(trajectory[:, 0], trajectory[:, 1], trajectory[:, 2], color=color)
+            
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.set_zlabel('Z')
+            
+            # Add a red dot at the origin
+            ax.scatter(0, 0, 0, color='red', s=100)
+            
+            # Plot a transparent sphere of radius R
+            u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+            x = self.R * np.cos(u) * np.sin(v)
+            y = self.R * np.sin(u) * np.sin(v)
+            z = self.R * np.cos(v)
+            ax.plot_wireframe(x, y, z, color="gray", alpha=0.3)
+            
+            plt.show()
 
 
 simulation = MonteCarloSimulation(N_photon, R, num_density, sigma, 0.01)
@@ -119,5 +124,5 @@ plt.hist(collisions, bins=20)
 plt.show()
 
 
-random_photon = simulation.select_random_photon()
-simulation.plot_trajectory(random_photon)
+random_photons = simulation.select_random_photon(10)
+simulation.plot_trajectory(random_photons)
