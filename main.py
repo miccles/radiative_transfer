@@ -41,4 +41,3 @@ class Photon(Particle):
 
 
 
-xrange = np.logspace(-3, 1, 1000)
