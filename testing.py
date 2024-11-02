@@ -1,24 +1,27 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from parameters import *
+
+class Particle:
+    def __init__(self, mass, charge, energy):
+        self.mass = mass
+        self.charge = charge
+        self.energy = energy # energy in me * c^2 units
+
+    
+    def energy_keV(self):
+        return self.energy * mec2_keV
 
 
-N = 2000  # Number of random numbers
 
-random_numbers_x = np.random.uniform(0, 1, N)
-random_numbers_y = 1 - random_numbers_x
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+class Photon(Particle):
+    def __init__(self, energy):
+        super().__init__(0, 0, energy)
 
-# Left subplot: Histogram of random_numbers
-ax1.hist(random_numbers_x, bins=20)
-ax1.set_title('Histogram of cosines')
-ax1.set_xlabel('Value')
-ax1.set_ylabel('Frequency')
 
-# Right subplot: Histogram of cosines
-ax2.hist(random_numbers_y, bins=20)
-ax2.set_title('Histogram of phi angles')
-ax2.set_xlabel('Value')
-ax2.set_ylabel('Frequency')
+electron_1 = Particle(me, -1, 1)
+print(electron_1.energy)
 
-plt.show()
+photon_1 = Photon(2)
+print(photon_1.energy)

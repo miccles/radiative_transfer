@@ -2,22 +2,45 @@ import numpy as np
 
 from parameters import *
 
+
+def generate_energy(dist_type='normal', **kwargs):
+    if dist_type == 'normal':
+        mean = kwargs.get('mean')
+        sigma = kwargs.get('sigma')
+        return np.random.normal(mean, sigma)
+    elif dist_type == 'uniform':
+        min_val = kwargs.get('low')
+        max_val = kwargs.get('high')
+        return np.random.uniform(min_val, max_val)
+    elif dist_type == 'powerlaw':
+        alpha = kwargs.get('alpha')
+        xmin = kwargs.get('xmin')
+        xmax = kwargs.get('xmax')
+        xi = np.random.random()
+        if alpha == 1:
+            return np.exp(np.log(xmax / xmin) * xi + np.log(xmin))
+        else:
+            return ((xmax ** (1 - alpha) - xmin ** (1 - alpha)) * xi + xmin ** (1 - alpha)) ** (1 / (1 - alpha))
+    elif dist_type == 'blackbody':
+        pass
+    else:
+        raise ValueError(f"Unsupported distribution type: {dist_type}")
+
 class Particle:
-    def __init__(self, mass, charge, energy):
+    def __init__(self, mass, charge, energy_dist, **dist_params):
         self.mass = mass
         self.charge = charge
-        self.energy = energy # energy in me * c^2 units
+        self.energy = generate_energy(energy_dist, **dist_params) # energy in me * c^2 units
 
     
     def energy_keV(self):
         return self.energy * mec2_keV
 
 
-
-
 class Photon(Particle):
-    def __init__(self, energy):
-        super().__init__(0, 0, energy)
+    def __init__(self, energy_dist, **dist_params):
+        super().__init__(0, 0, energy_dist, **dist_params)
+        self.energy = generate_energy(energy_dist, **dist_params)
         self.x = 0
         self.y = 0
         self.z = 0

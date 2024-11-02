@@ -4,12 +4,15 @@ import matplotlib.pyplot as plt
 from particles import Photon
 
 class MonteCarloSimulation:
-    def __init__(self, N, R, n, sigma, energy):
+    def __init__(
+                self, N, R, n, sigma, photon_dist,
+                **dist_params
+                ):
         self.N = N
         self.R = R
         self.n = n
         self.sigma = sigma
-        self.photons = [Photon(energy) for _ in range(N)]
+        self.photons = [Photon(photon_dist, **dist_params) for _ in range(N)]
 
     def simulate(self):
         for photon in self.photons:
