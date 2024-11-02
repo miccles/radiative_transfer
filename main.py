@@ -16,11 +16,7 @@ R = 20 * l_mean
 
 simulation = MonteCarloSimulation(N_photon, R, num_density, sigma, 0.01)
 simulation.simulate()
-collisions = simulation.get_collisions()
-
-plt.hist(collisions, bins=20)
-plt.show()
 
 
-random_photons = simulation.select_random_photon(10)
-simulation.plot_trajectory(random_photons)
+simulation.plot_coll_number_histogram()
+simulation.plot_trajectories(num_photons=10)

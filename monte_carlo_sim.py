@@ -39,7 +39,13 @@ class MonteCarloSimulation:
             raise ValueError("Number of photons to select is greater than total number of photons")
         return np.random.choice(self.photons, num)
 
-    def plot_trajectory(self, photons):
+    def plot_coll_number_histogram(self):
+        collisions = self.get_collisions()
+        plt.hist(collisions, bins=20)
+        plt.savefig('collisions_histogram.png')
+
+    def plot_trajectories(self, num_photons):
+            photons = self.select_random_photon(10)
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
             colors = plt.cm.jet(np.linspace(0, 1, len(photons)))
@@ -62,4 +68,9 @@ class MonteCarloSimulation:
             z = self.R * np.cos(v)
             ax.plot_wireframe(x, y, z, color="gray", alpha=0.3)
             
-            plt.show()
+            plt.savefig('trajectories.png')
+
+    def plot_energy_spectrum(self):
+        energies = [Photon.energy for photon in self.photons]
+        plt.hist(energies, bins=20)
+        plt.savefig('energy_spectrum.png')
