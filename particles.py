@@ -38,21 +38,24 @@ class Particle:
 
 
 class Photon(Particle):
-    def __init__(self, energy_dist, **dist_params):
+    def __init__(self, energy_dist, track_trajectory=False, **dist_params):
         super().__init__(0, 0, energy_dist, **dist_params)
         self.energy = generate_energy(energy_dist, **dist_params)
         self.x = 0
         self.y = 0
         self.z = 0
+        self.track_trajectory = track_trajectory
+        self.trajectory = []
         self.collisions = 0
-        self.trajectory = [(self.x, self.y, self.z)]
 
     def move(self, L, theta, phi):
         self.x += L * np.sin(theta) * np.cos(phi)
         self.y += L * np.sin(theta) * np.sin(phi)
         self.z += L * np.cos(theta)
+        if self.track_trajectory:
+            self.trajectory.append((self.x, self.y, self.z))
         self.collisions += 1
-        self.trajectory.append((self.x, self.y, self.z))
+    
 
     def energy_to_wavelength(self):
         return lambda_db / self.energy
