@@ -43,6 +43,7 @@ class MonteCarloSimulation:
         collisions = self.get_collisions()
         plt.hist(collisions, bins=20)
         plt.savefig('collisions_histogram.png')
+        plt.close()
 
     def plot_trajectories(self, num_photons):
             photons = self.select_random_photon(10)
@@ -68,9 +69,10 @@ class MonteCarloSimulation:
             z = self.R * np.cos(v)
             ax.plot_wireframe(x, y, z, color="gray", alpha=0.3)
             
-            plt.savefig('trajectories.png')
+            plt.show()
 
     def plot_energy_spectrum(self):
-        energies = [Photon.energy for photon in self.photons]
+        energies = [photon.energy for photon in self.photons]
         plt.hist(energies, bins=20)
         plt.savefig('energy_spectrum.png')
+        plt.close()
