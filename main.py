@@ -9,7 +9,7 @@ from parameters import *
 
 def main():
     simulation = MonteCarloSimulation(N_photon, R, num_density, 
-                               sigma, num_tracked_photons, photon_dist, **dist_params)
+                               num_tracked_photons, photon_dist, **photon_dist_params)
     simulation.simulate()
 
     mean_collisions = simulation.plot_coll_number_histogram()
@@ -19,3 +19,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+

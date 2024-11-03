@@ -7,13 +7,12 @@ from particles import Photon
 
 class MonteCarloSimulation:
     def __init__(
-                self, N, R, n, sigma, num_tracked_photons, photon_dist,
+                self, N, R, n, num_tracked_photons, photon_dist,
                 **dist_params
                 ):
         self.N = N
         self.R = R
         self.n = n
-        self.sigma = sigma
         self.num_tracked_photons = num_tracked_photons
         self.photons = [Photon(photon_dist, **dist_params) for _ in range(N)]
         self.tracked_photons = []
@@ -26,14 +25,15 @@ class MonteCarloSimulation:
             while self.is_inside_sphere(photon):
                 r1, r2, r3 = np.random.random(3)
                 tau = -np.log(r1)
-                L = self.calc_L_from_tau(tau)
+                L = self.calc_L_from_tau(photon, tau)
                 theta = np.arccos(2 * r2 - 1)
                 phi = 2 * np.pi * r3
                 photon.move(L, theta, phi)
 
     
-    def calc_L_from_tau(self, tau):
-        return tau / (self.n * self.sigma)
+    def calc_L_from_tau(self, photon, tau):
+        sigma = photon.sigma()
+        return tau / (self.n * sigma)
 
     def is_inside_sphere(self, photon):
         return photon.x**2 + photon.y**2 + photon.z**2 < self.R**2
@@ -91,5 +91,8 @@ class MonteCarloSimulation:
     def plot_energy_spectrum(self):
         energies = [photon.energy for photon in self.photons]
         plt.hist(energies, bins=20)
+        plt.xlabel(r'$\frac{E}{m_ec^2}$')
+        plt.ylabel('Number of photons')
+        plt.xlim(0, None)
         plt.savefig('energy_spectrum.png')
         plt.close()

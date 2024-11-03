@@ -4,6 +4,8 @@ from parameters import *
 
 
 def generate_energy(dist_type='normal', **kwargs):
+    if dist_type == 'monoenergetic':
+        return kwargs.get('energy')
     if dist_type == 'normal':
         mean = kwargs.get('mean')
         sigma = kwargs.get('sigma')
@@ -65,6 +67,9 @@ class Photon(Particle):
         x = self.energy
         return (3 / (8 * x)) * ((1 - 2 * (x + 1) / x ** 2) * np.log(1 + 2 * x) + 0.5 + 4 / x - 0.5 / (1 + 2 * x)**2) 
 
+
+    def sigma(self):
+        return sigma_Thomson * self.sigma_klein_nishina()
 
     def compton_scatter(self, angle):  # returns the energy of the scattered photon in me * c^2 units # angle in radians
         return self.energy / (1 + self.energy * (1 - np.cos(angle)))
