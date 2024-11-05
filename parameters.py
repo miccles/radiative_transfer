@@ -1,5 +1,6 @@
 c = 1
 me = 1
+qe = -1
 h = 1
 
 lambda_db = h / (me * c) # de Broglie wavelength of electrons
@@ -17,7 +18,7 @@ max_tau = 20
 R = max_tau * l_mean_Thomson
 
 photon_dist = 'blackbody'
-electron_dist = 'monoenergetic'
+electron_dist = 'powerlaw'
 
 # Photon distribution parameters
 photon_dist_params_dict = {
@@ -34,7 +35,7 @@ electron_dist_params_dict = {
     'monoenergetic': {'energy': 1.1},
     'normal': {'mean': 1.1, 'std': 0.1},
     'uniform': {'E_min': 1, 'E_max': 1.2},
-    'powerlaw': {'alpha': 1, 'E_min': 0.01, 'E_max': 10},
+    'powerlaw': {'alpha': 1.5, 'E_min': 0.3, 'E_max': 1},
     'blackbody': {'theta_g': 1},
     'maxwell_juttner': {'theta': 1, 'gamma_max': 10}
 }

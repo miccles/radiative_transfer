@@ -4,7 +4,7 @@ from parameters import *
 from functions import * 
 
 
-def generate_energy(dist_type='normal', **kwargs):
+def generate_energy(dist_type='normal', **kwargs): # RETURNS KINETIC ENERGY IN me * c^2 UNITS
     if dist_type == 'monoenergetic':
         return kwargs.get('energy')
     if dist_type == 'normal':

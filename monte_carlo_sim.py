@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from parameters import *
 from functions import blackbody_distr
 
-from particles import Photon
+from particles import Photon, Particle
 
 class MonteCarloSimulation:
     def __init__(
@@ -20,26 +20,61 @@ class MonteCarloSimulation:
         self.num_tracked_photons = num_tracked_photons
         self.photon_dist = photon_dist
         self.photon_dist_params = photon_dist_params
-        self.photons = [Photon(photon_dist, **photon_dist_params) for _ in range(num_photons)]
+        self.electron_dist = electron_dist
+        self.electron_dist_params = electron_dist_params
+        self.photons = [Photon(self.photon_dist, **self.photon_dist_params) for _ in range(num_photons)]
         self.tracked_photons = []
         self.select_random_photons(self.num_tracked_photons)
 
-
-
     def simulate(self):
         for photon in self.photons:
+            # Step 0: Initialize photons and move them to their initial positions
+            r1, r2, r3 = np.random.random(3)
+            tau = -np.log(r1)
+            L = self.calc_L_from_tau(photon, tau)
+            theta = np.arccos(2 * r2 - 1)
+            phi = 2 * np.pi * r3
+            photon.move(L, theta, phi)
+
+            # Apply Compton scattering and update photon energy
             while self.is_inside_sphere(photon):
-                r1, r2, r3 = np.random.random(3)
+                en_photon_f, theta_photon_f = self.compton_scattering(photon)
+                photon.energy = en_photon_f
+
+                # Generate two random numbers for L and phi
+                r1, r2 = np.random.random(2)
                 tau = -np.log(r1)
                 L = self.calc_L_from_tau(photon, tau)
-                theta = np.arccos(2 * r2 - 1)
-                phi = 2 * np.pi * r3
-                photon.move(L, theta, phi)
+                phi = 2 * np.pi * r2
 
-    
+                # Propagate the photon
+                photon.move(L, theta_photon_f, phi)
+
+
     def calc_L_from_tau(self, photon, tau):
         sigma = photon.sigma()
         return tau / (self.n * sigma)
+    
+
+    def compton_scattering(self, photon):
+        def en_final(en_ph_0, beta_el, en_el, theta_ph_fin, theta_el_in, theta_el_fin):
+            return en_ph_0 * (1 - beta_el * np.cos(theta_el_in)) / (1 - beta_el * np.cos(theta_el_fin) + en_ph_0 / en_el * (1 - np.cos(theta_ph_fin)))
+        
+        # Generate an electron from the electron distribution
+        electron = Particle(me, qe, self.electron_dist, **self.electron_dist_params)
+        energy_electron = electron.energy
+        gamma_electron = energy_electron + 1
+        beta_electron = np.sqrt(1 - 1 / gamma_electron**2)
+
+        # Generate angles from an isotropic distribution
+        r1, r2, r3 = np.random.random(3)
+        theta_el_in = np.arccos(2 * r1 - 1)
+        theta_el_fin = np.arccos(2 * r2 - 1)
+        theta_photon_f = np.arccos(2 * r3 - 1)
+
+        # Calculate the final energy of the photon
+        en_photon_f = en_final(photon.energy, beta_electron, energy_electron, theta_photon_f, theta_el_in, theta_el_fin)
+        return en_photon_f, theta_photon_f
 
     def is_inside_sphere(self, photon):
         return photon.x**2 + photon.y**2 + photon.z**2 < self.R**2
