@@ -7,10 +7,6 @@ lambda_db = h / (me * c) # de Broglie wavelength of electrons
 mec2_eV = 510998.951 # electron rest mass energy in eV
 kB = 8.617333262145 * 10 ** (-5) # Boltzmann constant in eV / K
 
-
-photon_dist = 'monoenergetic'
-electron_dist = 'monoenergetic'
-
 N_photon = 1000
 num_tracked_photons = 0
 
@@ -20,18 +16,21 @@ l_mean_Thomson = 1 / (num_density * sigma_Thomson)
 max_tau = 20
 R = max_tau * l_mean_Thomson
 
+photon_dist = 'blackbody'
+electron_dist = 'monoenergetic'
+
 # Photon distribution parameters
-photon_dist_params = {
+photon_dist_params_dict = {
     'monoenergetic': {'energy': 0.01},
     'normal': {'mean': 0.01, 'std': 0.1},
     'uniform': {'E_min': 0.01, 'E_max': 10},
     'powerlaw': {'alpha': 1, 'E_min': 0.01, 'E_max': 10},
-    'blackbody': {'theta_g': 1},
+    'blackbody': {'theta_g': 0.01},
     'maxwell_juttner': {'theta': 1, 'gamma_max': 10}
 }
 
 # Electron distribution parameters
-electron_dist_params = {
+electron_dist_params_dict = {
     'monoenergetic': {'energy': 1.1},
     'normal': {'mean': 1.1, 'std': 0.1},
     'uniform': {'E_min': 1, 'E_max': 1.2},
@@ -42,8 +41,8 @@ electron_dist_params = {
 
 def get_particle_params(particle_type, dist_type):
     if particle_type == 'photon':
-        return photon_dist_params.get(dist_type, {})
+        return photon_dist_params_dict.get(dist_type, {})
     elif particle_type == 'electron':
-        return electron_dist_params.get(dist_type, {})
+        return electron_dist_params_dict.get(dist_type, {})
 
 

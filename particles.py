@@ -1,7 +1,7 @@
 import numpy as np
-from scipy.special import kv
-
+from scipy.optimize import newton
 from parameters import *
+from functions import * 
 
 
 def generate_energy(dist_type='normal', **kwargs):
@@ -37,13 +37,13 @@ def generate_energy(dist_type='normal', **kwargs):
 
 
 def sample_maxwell_juttner(theta, gamma_max):
-    # Sample Lorentz factors from the Maxwell-Jüttner distribution
+    gamma_initial_guess = 1 + theta  # Initial guess for gamma
+    gamma_max = newton(maxwell_juttner_distr, gamma_initial_guess, args=(theta,))
     while True:
         gamma_rand = np.random.uniform(1, gamma_max)
-        beta = np.sqrt(1 - 1 / gamma_rand**2)
-        normalization = theta * kv(2, 1 / theta)
-        f = (gamma_rand**2 * beta * np.exp(-gamma_rand / theta)) / normalization
-        if np.random.random() < f:
+        dist = maxwell_juttner_distr(gamma_rand, theta)
+        dist_max = maxwell_juttner_distr(gamma_max, theta)
+        if np.random.random() < dist / dist_max:
             return gamma_rand
         
 
@@ -54,8 +54,10 @@ def sample_blackbody(theta_g):
         return hv_peak
     while True:
         en_rand = np.random.uniform(10 ** (-5), 10 ** 3) * wien_peak_energy(theta_g)
-        dist = (15 / (np.pi ** 4 * theta_g ** 4)) * en_rand ** 3 / (np.exp(en_rand / theta_g) - 1)
-        if np.random.random() < dist:
+        max_loc = 2.82144 * theta_g
+        dist_max = blackbody_distr(max_loc, theta_g)
+        dist = blackbody_distr(en_rand, theta_g)
+        if np.random.random() < dist / dist_max:
             return en_rand
 
 class Particle:

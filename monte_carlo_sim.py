@@ -2,20 +2,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from parameters import *
+from functions import blackbody_distr
 
 from particles import Photon
 
 class MonteCarloSimulation:
     def __init__(
-                self, N, R, n, sigma, 
+                self, num_photons, num_tracked_photons,
+                R, n, 
                 photon_dist, photon_dist_params, 
                 electron_dist, electron_dist_params
                 ):
-        self.N = N
+        self.num_photons = num_photons
+        self.num_tracked_photons = num_tracked_photons
         self.R = R
         self.n = n
         self.num_tracked_photons = num_tracked_photons
-        self.photons = [Photon(photon_dist, **photon_dist_params) for _ in range(N)]
+        self.photon_dist = photon_dist
+        self.photon_dist_params = photon_dist_params
+        self.photons = [Photon(photon_dist, **photon_dist_params) for _ in range(num_photons)]
         self.tracked_photons = []
         self.select_random_photons(self.num_tracked_photons)
 
@@ -43,7 +48,7 @@ class MonteCarloSimulation:
         return [photon.collisions for photon in self.photons]
 
     def select_random_photons(self, num=1):
-        if num > self.N:
+        if num > self.num_photons:
             raise ValueError("Number of photons to select is greater than total number of photons")
         selected_photons = np.random.choice(self.photons, num, replace=False)
         for photon in selected_photons:
@@ -91,9 +96,15 @@ class MonteCarloSimulation:
 
     def plot_energy_spectrum(self):
         energies = [photon.energy for photon in self.photons]
-        plt.hist(energies, bins=20)
-        plt.xlabel(r'$\frac{E}{m_ec^2}$')
-        plt.ylabel('Number of photons')
-        plt.xlim(0, None)
+        plt.hist(energies, bins=30, density=True, alpha=0.6, color='g', label='Sampled')
+
+        if self.photon_dist == 'blackbody':
+            energy_values = np.linspace(0, max(energies), 1000)
+            theoretical_values = blackbody_distr(energy_values, self.photon_dist_params['theta_g'])
+            plt.plot(energy_values, theoretical_values, 'r-', label='Theoretical')
+
+        plt.xlabel(r'$\frac{E}{m_e c^2}$')
+        plt.ylabel('Probability density')
+        plt.legend()
+        plt.title('Energy Spectrum')
         plt.savefig('energy_spectrum.png')
-        plt.close()
