@@ -7,14 +7,15 @@ from particles import Photon
 
 class MonteCarloSimulation:
     def __init__(
-                self, N, R, n, num_tracked_photons, photon_dist,
-                **dist_params
+                self, N, R, n, sigma, 
+                photon_dist, photon_dist_params, 
+                electron_dist, electron_dist_params
                 ):
         self.N = N
         self.R = R
         self.n = n
         self.num_tracked_photons = num_tracked_photons
-        self.photons = [Photon(photon_dist, **dist_params) for _ in range(N)]
+        self.photons = [Photon(photon_dist, **photon_dist_params) for _ in range(N)]
         self.tracked_photons = []
         self.select_random_photons(self.num_tracked_photons)
 

@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import kv
 
 from parameters import *
 
@@ -24,9 +25,38 @@ def generate_energy(dist_type='normal', **kwargs):
         else:
             return ((xmax ** (1 - alpha) - xmin ** (1 - alpha)) * xi + xmin ** (1 - alpha)) ** (1 / (1 - alpha))
     elif dist_type == 'blackbody':
-        pass
+        theta_g = kwargs.get('theta_g')
+        return sample_blackbody(theta_g)
+    elif dist_type == 'maxwell_juttner':
+        theta = kwargs.get('theta')
+        gamma_max = kwargs.get('gamma_max')
+        gamma_particle = sample_maxwell_juttner(theta, gamma_max)
+        return gamma_particle
     else:
         raise ValueError(f"Unsupported distribution type: {dist_type}")
+
+
+def sample_maxwell_juttner(theta, gamma_max):
+    # Sample Lorentz factors from the Maxwell-Jüttner distribution
+    while True:
+        gamma_rand = np.random.uniform(1, gamma_max)
+        beta = np.sqrt(1 - 1 / gamma_rand**2)
+        normalization = theta * kv(2, 1 / theta)
+        f = (gamma_rand**2 * beta * np.exp(-gamma_rand / theta)) / normalization
+        if np.random.random() < f:
+            return gamma_rand
+        
+
+def sample_blackbody(theta_g):
+    def wien_peak_energy(theta_g):
+        temp_kelvin = theta_g * mec2_eV / kB
+        hv_peak = 2.4315 * 10 ** (-4) * temp_kelvin / mec2_eV  # returns peak energy in me * c^2 units
+        return hv_peak
+    while True:
+        en_rand = np.random.uniform(10 ** (-5), 10 ** 3) * wien_peak_energy(theta_g)
+        dist = (15 / (np.pi ** 4 * theta_g ** 4)) * en_rand ** 3 / (np.exp(en_rand / theta_g) - 1)
+        if np.random.random() < dist:
+            return en_rand
 
 class Particle:
     def __init__(self, mass, charge, energy_dist, **dist_params):
@@ -35,8 +65,8 @@ class Particle:
         self.energy = generate_energy(energy_dist, **dist_params) # energy in me * c^2 units
 
     
-    def energy_keV(self):
-        return self.energy * mec2_keV
+    def energy_eV(self):
+        return self.energy * mec2_eV # energy in eV units
 
 
 class Photon(Particle):

@@ -8,8 +8,13 @@ from parameters import *
 
 
 def main():
-    simulation = MonteCarloSimulation(N_photon, R, num_density, 
-                               num_tracked_photons, photon_dist, **photon_dist_params)
+    photon_dist_params = get_particle_params('photon', photon_dist)
+    electron_dist_params = get_particle_params('electron', electron_dist)
+    simulation = MonteCarloSimulation(
+        N_photon, R, num_density, 
+        num_tracked_photons, 
+        photon_dist=photon_dist, photon_dist_params=photon_dist_params,
+        electron_dist=electron_dist, electron_dist_params=electron_dist_params)
     simulation.simulate()
 
     mean_collisions = simulation.plot_coll_number_histogram()
