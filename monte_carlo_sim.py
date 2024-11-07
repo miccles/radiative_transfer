@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 
 from parameters import *
 from functions import blackbody_distr
-
-from particles import Photon, Particle
+from particles import Photon, Particle, generate_energy
 
 class MonteCarloSimulation:
     def __init__(
@@ -130,16 +129,25 @@ class MonteCarloSimulation:
         plt.show()
 
     def plot_energy_spectrum(self):
-        energies = [photon.energy for photon in self.photons]
-        plt.hist(energies, bins=30, density=True, alpha=0.6, color='g', label='Sampled')
+            # Plot the sampled photon energy histogram
+            energies = [photon.energy for photon in self.photons]
+            plt.hist(energies, bins=30, density=True, alpha=0.6, color='g', label='Sampled')
 
-        if self.photon_dist == 'blackbody':
-            energy_values = np.linspace(0, max(energies), 1000)
-            theoretical_values = blackbody_distr(energy_values, self.photon_dist_params['theta_g'])
-            plt.plot(energy_values, theoretical_values, 'r-', label='Theoretical')
+            # Plot the initial photon energy distribution
+            initial_photon_energies = [generate_energy(self.photon_dist, **self.photon_dist_params) for _ in range(10000)]
+            plt.hist(initial_photon_energies, bins=30, density=True, alpha=0.6, color='b', label='Initial Photon Distribution')
 
-        plt.xlabel(r'$\frac{E}{m_e c^2}$')
-        plt.ylabel('Probability density')
-        plt.legend()
-        plt.title('Energy Spectrum')
-        plt.savefig('energy_spectrum.png')
+            # Plot the electron energy distribution
+            electron_energies = [generate_energy(self.electron_dist, **self.electron_dist_params) for _ in range(10000)]
+            plt.hist(electron_energies, bins=30, density=True, alpha=0.6, color='r', label='Electron Distribution')
+
+            # Plot the theoretical blackbody distribution if applicable
+            if self.photon_dist == 'blackbody':
+                energy_values = np.linspace(0, max(energies), 1000)
+                theoretical_values = blackbody_distr(energy_values, self.photon_dist_params['theta_g'])
+                plt.plot(energy_values, theoretical_values, 'r-', label='Theoretical')
+
+            plt.xlabel('Energy (in me * c^2 units)')
+            plt.ylabel('Probability density')
+            plt.legend()
+            plt.title('Energy Spectrum')
