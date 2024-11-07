@@ -12,13 +12,13 @@ def generate_energy(dist_type='normal', **kwargs): # RETURNS KINETIC ENERGY IN m
         sigma = kwargs.get('sigma')
         return np.random.normal(mean, sigma)
     elif dist_type == 'uniform':
-        min_val = kwargs.get('low')
-        max_val = kwargs.get('high')
+        min_val = kwargs.get('Emin')
+        max_val = kwargs.get('Emax')
         return np.random.uniform(min_val, max_val)
     elif dist_type == 'powerlaw':
         alpha = kwargs.get('alpha')
-        xmin = kwargs.get('xmin')
-        xmax = kwargs.get('xmax')
+        xmin = kwargs.get('Emin')
+        xmax = kwargs.get('Emax')
         xi = np.random.random()
         if alpha == 1:
             return np.exp(np.log(xmax / xmin) * xi + np.log(xmin))
