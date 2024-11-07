@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import newton
 from parameters import *
-from functions import * 
+from functions import TheoreticalDistributions 
 
 
 def generate_energy(dist_type='normal', **kwargs): # RETURNS KINETIC ENERGY IN me * c^2 UNITS
@@ -37,12 +37,14 @@ def generate_energy(dist_type='normal', **kwargs): # RETURNS KINETIC ENERGY IN m
 
 
 def sample_maxwell_juttner(theta, gamma_max):
+    def func(gamma, theta):
+        return gamma ** 3 - 2 * gamma ** 2 * theta - gamma + theta
     gamma_initial_guess = 1 + theta  # Initial guess for gamma
-    gamma_max = newton(maxwell_juttner_distr, gamma_initial_guess, args=(theta,))
+    gamma_max = newton(func, gamma_initial_guess, args=(theta,))
     while True:
         gamma_rand = np.random.uniform(1, gamma_max)
-        dist = maxwell_juttner_distr(gamma_rand, theta)
-        dist_max = maxwell_juttner_distr(gamma_max, theta)
+        dist = TheoreticalDistributions.maxwell_juttner(gamma_rand - 1, theta)
+        dist_max = TheoreticalDistributions.maxwell_juttner(gamma_max - 1, theta)
         if np.random.random() < dist / dist_max:
             return gamma_rand
         
@@ -55,8 +57,8 @@ def sample_blackbody(theta_g):
     while True:
         en_rand = np.random.uniform(10 ** (-5), 10 ** 3) * wien_peak_energy(theta_g)
         max_loc = 2.82144 * theta_g
-        dist_max = blackbody_distr(max_loc, theta_g)
-        dist = blackbody_distr(en_rand, theta_g)
+        dist_max = TheoreticalDistributions.blackbody(max_loc, theta_g)
+        dist = TheoreticalDistributions.blackbody(en_rand, theta_g)
         if np.random.random() < dist / dist_max:
             return en_rand
 

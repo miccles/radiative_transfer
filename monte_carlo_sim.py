@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from parameters import *
-from functions import blackbody_distr
+from functions import TheoreticalDistributions
 from particles import Photon, Particle, generate_energy
 
 class MonteCarloSimulation:
@@ -141,13 +141,12 @@ class MonteCarloSimulation:
             electron_energies = [generate_energy(self.electron_dist, **self.electron_dist_params) for _ in range(10000)]
             plt.hist(electron_energies, bins=30, density=True, alpha=0.6, color='r', label='Electron Distribution')
 
-            # Plot the theoretical blackbody distribution if applicable
-            if self.photon_dist == 'blackbody':
-                energy_values = np.linspace(0, max(energies), 1000)
-                theoretical_values = blackbody_distr(energy_values, self.photon_dist_params['theta_g'])
-                plt.plot(energy_values, theoretical_values, 'r-', label='Theoretical')
+            # Plot the photon initial distribution
+            energy_values = np.linspace(0, max(energies), 1000)
+            theoretical_values = TheoreticalDistributions(energy_values, self.photon_dist, self.photon_dist_params['theta_g'])
+            plt.plot(energy_values, theoretical_values, 'r-', label='Theoretical')
 
-            plt.xlabel('Energy (in me * c^2 units)')
+            plt.xlabel(r'$\frac{E_K}{m_e c^2}$')
             plt.ylabel('Probability density')
-            plt.legend()
+            plt.legend(loc='best')
             plt.title('Energy Spectrum')
