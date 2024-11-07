@@ -57,8 +57,8 @@ def sample_blackbody(theta_g):
     while True:
         en_rand = np.random.uniform(10 ** (-5), 10 ** 3) * wien_peak_energy(theta_g)
         max_loc = 2.82144 * theta_g
-        dist_max = TheoreticalDistributions.blackbody(max_loc, theta_g)
-        dist = TheoreticalDistributions.blackbody(en_rand, theta_g)
+        dist_max = TheoreticalDistributions(max_loc, 'blackbody', theta_g=theta_g).probability_density()
+        dist = TheoreticalDistributions(en_rand, 'blackbody', theta_g=theta_g).probability_density()
         if np.random.random() < dist / dist_max:
             return en_rand
 
