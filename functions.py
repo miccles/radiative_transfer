@@ -39,7 +39,9 @@ class TheoreticalDistributions: # Returns probability densities normalized to 1
     def uniform(self):
         low = self.kwargs.get('E_min')
         high = self.kwargs.get('E_max')
-        return 1 / (high - low)
+        if low <= self.energy <= high:
+            return 1 / (high - low)
+        return 0
 
     def powerlaw(self):
         x = self.energy

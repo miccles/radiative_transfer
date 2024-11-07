@@ -146,6 +146,9 @@ class MonteCarloSimulation:
             theoretical_values = TheoreticalDistributions(energy_values, self.photon_dist, self.photon_dist_params['theta_g'])
             plt.plot(energy_values, theoretical_values, 'r-', label='Theoretical')
 
+            # Plot the electron initial distribution
+            
+
             plt.xlabel(r'$\frac{E_K}{m_e c^2}$')
             plt.ylabel('Probability density')
             plt.legend(loc='best')
