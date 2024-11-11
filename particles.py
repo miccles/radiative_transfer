@@ -99,8 +99,9 @@ class Photon(Particle):
 
     def sigma_klein_nishina(self): # sigma / sigma_Thomson
         x = self.energy
-        return (3 / (8 * x)) * ((1 - 2 * (x + 1) / x ** 2) * np.log(1 + 2 * x) + 0.5 + 4 / x - 0.5 / (1 + 2 * x)**2) 
-        #return 1
+        sigma_sigmaT = (3 / (8 * x)) * ((1 - 2 * (x + 1) / x ** 2) * np.log(1 + 2 * x) + 0.5 + 4 / x - 0.5 / (1 + 2 * x)**2) 
+        return sigma_sigmaT
+
 
     def sigma(self):
         return sigma_Thomson * self.sigma_klein_nishina()

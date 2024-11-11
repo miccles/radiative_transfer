@@ -99,7 +99,7 @@ class MonteCarloSimulation:
         fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
         # Plot the collision number histogram
-        axs[0].hist(collisions, bins=20)
+        axs[0].hist(collisions, bins=40)
         axs[0].vlines(np.mean(collisions), 0, 0.2 * len(collisions), color='red', label='Mean')
         axs[0].vlines(max_tau ** 2, 0, 0.2 * len(collisions), color='green', label=r'$\tau_{max}^2$')
         axs[0].set_xlabel('Number of Collisions')
@@ -108,7 +108,7 @@ class MonteCarloSimulation:
         axs[0].set_title('Collision Number Histogram')
 
         # Plot the cross-section histogram
-        axs[1].hist(cross_sections, bins=20, color='orange')
+        axs[1].hist(cross_sections, bins=40, color='orange')
         axs[1].set_xlabel(r'$\sigma/\sigma_T$')
         axs[1].set_ylabel('Frequency')
         axs[1].set_title('Cross Section Histogram')
