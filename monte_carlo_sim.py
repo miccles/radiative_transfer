@@ -24,6 +24,7 @@ class MonteCarloSimulation:
         self.photons = [Photon(self.photon_dist, **self.photon_dist_params) for _ in range(num_photons)]
         self.tracked_photons = []
         self.select_random_photons(self.num_tracked_photons)
+        self.cross_sections = []
 
     def simulate(self):
         for photon in self.photons:
@@ -34,6 +35,7 @@ class MonteCarloSimulation:
             theta = np.arccos(2 * r2 - 1)
             phi = 2 * np.pi * r3
             photon.move(L, theta, phi)
+            self.cross_sections.append(photon.sigma())
 
             # Apply Compton scattering and update photon energy
             while self.is_inside_sphere(photon):
@@ -92,12 +94,29 @@ class MonteCarloSimulation:
 
     def plot_coll_number_histogram(self):
         collisions = self.get_collisions()
-        plt.hist(collisions, bins=20)
-        plt.vlines(np.mean(collisions), 0, 0.2 * N_photon, color='red', label='Mean')
-        plt.vlines(max_tau ** 2, 0, 0.2 * N_photon, color='green', label=r'$\tau_{max}^2$')
-        plt.legend(loc='best')
+        cross_sections = self.cross_sections  # Assuming self.cross_sections is defined
+
+        fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+
+        # Plot the collision number histogram
+        axs[0].hist(collisions, bins=20)
+        axs[0].vlines(np.mean(collisions), 0, 0.2 * len(collisions), color='red', label='Mean')
+        axs[0].vlines(max_tau ** 2, 0, 0.2 * len(collisions), color='green', label=r'$\tau_{max}^2$')
+        axs[0].set_xlabel('Number of Collisions')
+        axs[0].set_ylabel('Frequency')
+        axs[0].legend(loc='best')
+        axs[0].set_title('Collision Number Histogram')
+
+        # Plot the cross-section histogram
+        axs[1].hist(cross_sections, bins=20, color='orange')
+        axs[1].set_xlabel(r'$\sigma/\sigma_T$')
+        axs[1].set_ylabel('Frequency')
+        axs[1].set_title('Cross Section Histogram')
+
+        plt.tight_layout()
         plt.savefig('collisions_histogram.png')
         plt.close()
+
         return np.mean(collisions)
 
     def plot_trajectories(self):
@@ -129,31 +148,41 @@ class MonteCarloSimulation:
         plt.show()
 
     def plot_energy_spectrum(self):
-            # Plot the sampled photon energy histogram
-            energies = [photon.energy for photon in self.photons]
-            plt.hist(energies, bins=30, density=True, alpha=0.6, color='g', label=r'$f_{\gamma}(E_f)$')
+        fig, axs = plt.subplots(2, 2, figsize=(12, 10))
 
-            # Plot the initial photon energy distribution
-            initial_photon_energies = [generate_energy(self.photon_dist, **self.photon_dist_params) for _ in range(1000)]
-            plt.hist(initial_photon_energies, bins=30, density=True, alpha=0.6, color='b', label=r'$f_{\gamma}(E_i)$')
+        # Plot the initial photon energy distribution + theoretical distribution
+        initial_photon_energies = [generate_energy(self.photon_dist, **self.photon_dist_params) for _ in range(1000)]
+        axs[0, 0].hist(initial_photon_energies, bins=30, density=True, alpha=0.6, color='b', label=r'$f_{\gamma}(E_i)$')
+        energy_values = np.linspace(0, max(initial_photon_energies), 1000)
+        theoretical_values = TheoreticalDistributions(energy_values, self.photon_dist, self.photon_dist_params).probability_density()
+        axs[0, 0].plot(energy_values, theoretical_values, 'r-', label=r'$f_{\gamma, \text{th}}(E_i)$')
+        axs[0, 0].set_xlabel(r'$\frac{E_K}{m_e c^2}$')
+        axs[0, 0].set_ylabel('Probability density')
+        axs[0, 0].legend(loc='best')
+        axs[0, 0].set_title('Initial Photon Energy Distribution')
 
-            # Plot the electron energy distribution
-            electron_energies = [generate_energy(self.electron_dist, **self.electron_dist_params) for _ in range(1000)]
-            plt.hist(electron_energies, bins=30, density=True, alpha=0.6, color='r', label=r'$f_{e}(E)$')
+        # Plot the electron energy distribution + theoretical distribution
+        electron_energies = [generate_energy(self.electron_dist, **self.electron_dist_params) for _ in range(1000)]
+        axs[0, 1].hist(electron_energies, bins=30, density=True, alpha=0.6, color='r', label=r'$f_{e}(E)$')
+        energy_values = np.linspace(0, max(electron_energies), 1000)
+        theoretical_values = TheoreticalDistributions(energy_values, self.electron_dist, self.electron_dist_params).probability_density()
+        axs[0, 1].plot(energy_values, theoretical_values, 'b-', label=r'$f_{e, \text{th}}(E)$')
+        axs[0, 1].set_xlabel(r'$\frac{E_K}{m_e c^2}$')
+        axs[0, 1].set_ylabel('Probability density')
+        axs[0, 1].legend(loc='best')
+        axs[0, 1].set_title('Electron Energy Distribution')
 
-            # Plot the photon initial distribution
-            energy_values = np.linspace(0, max(initial_photon_energies), 1000)
-            theoretical_values = TheoreticalDistributions(energy_values, self.photon_dist, self.photon_dist_params).probability_density()
-            plt.plot(energy_values, theoretical_values, 'r-', label=r'$f_{\gamma, \text{th}}(E_i)$')
+        # Plot the sampled photon energy histogram
+        energies = [photon.energy for photon in self.photons]
+        axs[1, 0].hist(energies, bins=30, density=True, alpha=0.6, color='g', label=r'$f_{\gamma}(E_f)$')
+        axs[1, 0].set_xlabel(r'$\frac{E_K}{m_e c^2}$')
+        axs[1, 0].set_ylabel('Probability density')
+        axs[1, 0].legend(loc='best')
+        axs[1, 0].set_title('Final Photon Energy Spectrum')
 
-            # Plot the electron initial distribution
-            # energy_values = np.linspace(0, max(electron_energies), 1000)
-            # theoretical_values = TheoreticalDistributions(energy_values, self.electron_dist, self.electron_dist_params).probability_density()
-            # plt.plot(energy_values, theoretical_values, 'b-', label=r'$f_{e, \text{th}}(E)$')
-            
-            plt.xlabel(r'$\frac{E_K}{m_e c^2}$')
-            plt.ylabel('Probability density')
-            plt.legend(loc='best')
-            plt.title('Energy Spectrum')
-            plt.savefig('energy_spectrum.png')
-            plt.close()
+        # Hide the empty subplot (bottom right)
+        axs[1, 1].axis('off')
+
+        plt.tight_layout()
+        plt.savefig('energy_spectrum.png')
+        plt.close()

@@ -8,7 +8,8 @@ lambda_db = h / (me * c) # de Broglie wavelength of electrons
 mec2_eV = 510998.951 # electron rest mass energy in eV
 kB = 8.617333262145 * 10 ** (-5) # Boltzmann constant in eV / K
 
-N_photon = 5
+
+N_photon = 1000
 num_tracked_photons = 0
 
 num_density = 1

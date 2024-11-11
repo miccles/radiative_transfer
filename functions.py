@@ -53,7 +53,7 @@ class TheoreticalDistributions: # Returns probability densities normalized to 1
         xmax = self.args.get('E_max')
         for x in self.energy:
             if xmin <= x <= xmax:
-                result.append((alpha - 1) * (x / xmin) ** (-alpha) / (xmin ** (1 - alpha) - xmax ** (1 - alpha)))
+                result.append(((1 - alpha) / (xmax ** (1 - alpha) - xmin ** (1 - alpha))) * x ** (-alpha))
             else:
                 result.append(0)
         return result
