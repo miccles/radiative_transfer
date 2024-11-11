@@ -8,7 +8,7 @@ lambda_db = h / (me * c) # de Broglie wavelength of electrons
 mec2_eV = 510998.951 # electron rest mass energy in eV
 kB = 8.617333262145 * 10 ** (-5) # Boltzmann constant in eV / K
 
-N_photon = 100
+N_photon = 5
 num_tracked_photons = 0
 
 num_density = 1
@@ -35,7 +35,7 @@ electron_dist_params_dict = {
     'monoenergetic': {'energy': 1.1},
     'normal': {'mean': 1.1, 'std': 0.1},
     'uniform': {'E_min': 1, 'E_max': 1.2},
-    'powerlaw': {'alpha': 1.5, 'E_min': 0.3, 'E_max': 1},
+    'powerlaw': {'alpha': 1.2, 'E_min': 0.15, 'E_max': 0.5},
     'blackbody': {'theta_g': 1},
     'maxwell_juttner': {'theta': 1, 'gamma_max': 10}
 }

@@ -131,25 +131,29 @@ class MonteCarloSimulation:
     def plot_energy_spectrum(self):
             # Plot the sampled photon energy histogram
             energies = [photon.energy for photon in self.photons]
-            plt.hist(energies, bins=30, density=True, alpha=0.6, color='g', label='Sampled')
+            plt.hist(energies, bins=30, density=True, alpha=0.6, color='g', label=r'$f_{\gamma}(E_f)$')
 
             # Plot the initial photon energy distribution
-            initial_photon_energies = [generate_energy(self.photon_dist, **self.photon_dist_params) for _ in range(10000)]
-            plt.hist(initial_photon_energies, bins=30, density=True, alpha=0.6, color='b', label='Initial Photon Distribution')
+            initial_photon_energies = [generate_energy(self.photon_dist, **self.photon_dist_params) for _ in range(1000)]
+            plt.hist(initial_photon_energies, bins=30, density=True, alpha=0.6, color='b', label=r'$f_{\gamma}(E_i)$')
 
             # Plot the electron energy distribution
-            electron_energies = [generate_energy(self.electron_dist, **self.electron_dist_params) for _ in range(10000)]
-            plt.hist(electron_energies, bins=30, density=True, alpha=0.6, color='r', label='Electron Distribution')
+            electron_energies = [generate_energy(self.electron_dist, **self.electron_dist_params) for _ in range(1000)]
+            plt.hist(electron_energies, bins=30, density=True, alpha=0.6, color='r', label=r'$f_{e}(E)$')
 
             # Plot the photon initial distribution
-            energy_values = np.linspace(0, max(energies), 1000)
-            theoretical_values = TheoreticalDistributions(energy_values, self.photon_dist, self.photon_dist_params['theta_g'])
-            plt.plot(energy_values, theoretical_values, 'r-', label='Theoretical')
+            energy_values = np.linspace(0, max(initial_photon_energies), 1000)
+            theoretical_values = TheoreticalDistributions(energy_values, self.photon_dist, self.photon_dist_params).probability_density()
+            plt.plot(energy_values, theoretical_values, 'r-', label=r'$f_{\gamma, \text{th}}(E_i)$')
 
             # Plot the electron initial distribution
+            # energy_values = np.linspace(0, max(electron_energies), 1000)
+            # theoretical_values = TheoreticalDistributions(energy_values, self.electron_dist, self.electron_dist_params).probability_density()
+            # plt.plot(energy_values, theoretical_values, 'b-', label=r'$f_{e, \text{th}}(E)$')
             
-
             plt.xlabel(r'$\frac{E_K}{m_e c^2}$')
             plt.ylabel('Probability density')
             plt.legend(loc='best')
             plt.title('Energy Spectrum')
+            plt.savefig('energy_spectrum.png')
+            plt.close()
