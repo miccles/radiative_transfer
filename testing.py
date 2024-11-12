@@ -32,27 +32,32 @@ from scipy.optimize import curve_fit
 import sys
 import warnings
 
-# 1. Open the output file in write mode
-output_file = open('output.txt', 'w')
+def enratio(x,mu):
+    return 1 / (1 + x*(1 - mu))
 
-# 2. Redirect stdout (print statements) and stderr (errors) to the output file
-sys.stdout = output_file
-sys.stderr = output_file
+def diff_cross_section(x, mu):
+    return (3 / (16 * np.pi)) * enratio(x, mu) ** 2 * (enratio(x, mu) + 1 / enratio(x, mu) + mu ** 2 - 1)
 
-# 3. Redirect warnings to the output file
-warnings.simplefilter("always")  # Show all warnings
-warnings.showwarning = lambda message, category, filename, lineno, file=None, line=None: \
-    print(f"{filename}:{lineno}: {category.__name__}: {message}")
+def tot_cross_section(x):
+    sigma_sigmaT = (3 / (8 * x)) * ((1 - 2 * (x + 1) / x ** 2) * np.log(1 + 2 * x) + 0.5 + 4 / x - 0.5 / (1 + 2 * x)**2) 
+    return sigma_sigmaT
 
-# Example prints, warnings, and errors
-print("This is a print statement.")
 
-warnings.warn("This is a warning.")
+def prob_density(x, mu):
+    return 2 * np.pi * diff_cross_section(x, mu) / tot_cross_section(x)
 
-try:
-    1 / 0  # This will raise an error
-except ZeroDivisionError as e:
-    print(f"Error: {e}")
 
-# 4. Close the file after you're done
-output_file.close()
+xvalues = [0.01, 0.1, 1, 5, 10, 100]
+
+for x in xvalues:
+    mu = np.linspace(-1, 1, 10000)
+    thetas = np.arccos(mu)
+    y = prob_density(x, mu)
+    plt.plot(thetas, y, label=f'x = {x}')
+
+plt.xlabel(r'$\theta_f$', fontsize=14)
+plt.ylabel('Probability Density', fontsize=14)
+plt.xscale('linear')
+plt.yscale('log')
+plt.legend()
+plt.show()

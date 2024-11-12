@@ -96,18 +96,40 @@ class Photon(Particle):
 
     def energy_to_wavelength(self):
         return lambda_db / self.energy
+    
+    def lorentz_transform(self, electron, mu): # From lab frame to electron frame 
+        gamma = 1 + electron.energy
+        beta = np.sqrt(1 - 1 / gamma ** 2)
+        en_photon = self.energy
+        en_photon_prime = gamma * en_photon * (1 - beta * mu)
+        return en_photon_prime
+
+    def inverse_lorentz_transform(self, en_photon_prime, electron, mu): # From electron frame to lab frame
+        gamma = 1 + electron.energy # Lab frame
+        beta = np.sqrt(1 - 1 / gamma ** 2) # Lab frame
+        en_photon = gamma * en_photon_prime * (1 + beta * mu) # Lab frame
+        return en_photon
 
 
-    def sigma_klein_nishina(self): # sigma / sigma_Thomson
+    def compton_energy_ratio(self, x, mu):
+        return 1 / (1 + x * (1 - mu))
+
+    def differential_cross_section(self, x, mu):
+        enratio = self.compton_energy_ratio(x, mu)
+        return (3 / (16 * np.pi)) * enratio ** 2 * (enratio + 1 / enratio + mu ** 2 - 1)
+
+    def sigma_tot_klein_nishina(self): # sigma / sigma_Thomson
         x = self.energy
-        # if x < 10 ** (-20):
-        #     print(f'Warning: energy={x}')
         sigma_sigmaT = (3 / (8 * x)) * ((1 - 2 * (x + 1) / x ** 2) * np.log(1 + 2 * x) + 0.5 + 4 / x - 0.5 / (1 + 2 * x)**2) 
         return sigma_sigmaT
+    
+    def angle_prob_density(self, x, mu):
+        return 2 * np.pi * self.differential_cross_section(x, mu) / self.sigma_tot_klein_nishina()
 
 
     def sigma(self):
-        return sigma_Thomson * self.sigma_klein_nishina()
+        return sigma_Thomson * self.sigma_tot_klein_nishina()
 
     def compton_scatter(self, angle):  # returns the energy of the scattered photon in me * c^2 units # angle in radians
         return self.energy / (1 + self.energy * (1 - np.cos(angle)))
+

@@ -35,9 +35,9 @@ class MonteCarloSimulation:
     def simulate(self):
         tracker = 0
         for photon in self.photons:
-            # tracker += 1
-            # print('---------------------------------')
-            # print(f'Simulating photon {tracker}...')
+            tracker += 1
+            print('---------------------------------')
+            print(f'Simulating photon {tracker}...')
             #Step 0: Initialize photons and move them to their initial positions
             r1, r2, r3 = np.random.random(3)
             tau = -np.log(r1)
