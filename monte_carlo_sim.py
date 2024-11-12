@@ -69,16 +69,17 @@ class MonteCarloSimulation:
         # gamma_electron = electron.energy + 1 # Electron energy (gamma) in Lab frame
         # beta_electron = np.sqrt(1 - 1 / gamma_electron**2)
 
-        # Generate one random number for mu #
+        # Generate one random number for theta_i #
         mu = 2 * np.random.random() - 1
-        photon_in_prime = photon.lorentz_transform(electron, mu) # Initial photon energy in electron rest frame
+        theta_i = np.arccos(mu)
+        photon_in_rest = photon.lorentz_transform(electron, mu) # Initial photon energy in electron rest frame
         
-        
-        
-        
-        photon_fin_prime = 1
-        
-        return
+        scattering_angle = photon.sample_angle(photon_in_rest) # Scattering angle in electron rest frame
+        theta_f = theta_i + scattering_angle
+        photon_fin_prime = photon.compton_energy_ratio(photon_in_rest, np.cos(scattering_angle)) # Final photon energy in electron rest frame
+        photon_fin_lab = photon.inverse_lorentz_transform(photon_fin_prime, electron, np.cos(theta_f)) # Final photon energy in Lab frame
+
+        return photon_fin_lab, scattering_angle
 
 
 

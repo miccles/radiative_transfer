@@ -64,9 +64,6 @@ def sample_blackbody(theta_g):
             return en_rand
         
 
-def sample_angle(): # generates scattering angle alpha from Klein-Nishina distribution
-    # from alpha we get theta_f = theta_i - alpha
-    pass
 
 class Particle:
     def __init__(self, mass, charge, energy_dist, **dist_params):
@@ -132,4 +129,15 @@ class Photon(Particle):
 
     def sigma(self):
         return sigma_Thomson * self.sigma_tot_klein_nishina()
+    
+
+    def sample_angle(self, x): # generates scattering angle alpha from Klein-Nishina distribution
+    # from alpha we get theta_f = theta_i - alpha
+        while True:
+            mu_rand = np.random.uniform(-1, 1)
+            dist_max = self.angle_prob_density(x, 0)
+            dist_value = self.angle_prob_density(x, mu_rand)
+            if np.random.random() < dist_value / dist_max:
+                theta_rand = np.arccos(mu_rand)
+                return np.random.choice([theta_rand, -theta_rand])
 
