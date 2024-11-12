@@ -32,42 +32,40 @@ class MonteCarloSimulation:
         tracker = 0
         for photon in self.photons:
             tracker += 1
-            print('---------------------------------')
-            print(f'Simulating photon {tracker}...')
+            # print('---------------------------------')
+            # print(f'Simulating photon {tracker}...')
             #Step 0: Initialize photons and move them to their initial positions
             r1, r2, r3 = np.random.random(3)
             tau = -np.log(r1)
-            L = self.calc_L_from_tau(photon, tau)
+            L = self.calc_L_from_tau(photon, photon.energy, tau)
             theta = np.arccos(2 * r2 - 1)
             phi = 2 * np.pi * r3
             photon.move(L, theta, phi)
-            self.cross_sections.append(photon.sigma())
+            self.cross_sections.append(photon.sigma(photon.energy))
 
             # Apply Compton scattering and update photon energy
             while self.is_inside_sphere(photon):
-                en_photon_f, theta_photon_f = self.compton_scattering(photon)
+                en_photon_f, en_photon_f_rest, theta_photon_f = self.compton_scattering(photon)
                 photon.energy = en_photon_f
 
                 # Generate two random numbers for L and phi
                 r1, r2 = np.random.random(2)
                 tau = -np.log(r1)
-                L = self.calc_L_from_tau(photon, tau)
+                L = self.calc_L_from_tau(photon, en_photon_f_rest, tau)
                 phi = 2 * np.pi * r2
 
                 # Propagate the photon
                 photon.move(L, theta_photon_f, phi)
             #print(f'Photon {tracker} escaped. Ncollisions = {photon.collisions}, Energy = {photon.energy}')
 
-    def calc_L_from_tau(self, photon, tau):
-        sigma = photon.sigma()
+    def calc_L_from_tau(self, photon, x_rest, tau):
+        sigma = photon.sigma(x_rest)
         return tau / (self.n * sigma)
     
 
     def compton_scattering(self, photon):
         # Generate an electron from the electron distribution
         electron = Particle(me, qe, self.electron_dist, **self.electron_dist_params)
-        # gamma_electron = electron.energy + 1 # Electron energy (gamma) in Lab frame
-        # beta_electron = np.sqrt(1 - 1 / gamma_electron**2)
 
         # Generate one random number for theta_i #
         mu = 2 * np.random.random() - 1
@@ -76,10 +74,10 @@ class MonteCarloSimulation:
         
         scattering_angle = photon.sample_angle(photon_in_rest) # Scattering angle in electron rest frame
         theta_f = theta_i + scattering_angle
-        photon_fin_prime = photon.compton_energy_ratio(photon_in_rest, np.cos(scattering_angle)) # Final photon energy in electron rest frame
-        photon_fin_lab = photon.inverse_lorentz_transform(photon_fin_prime, electron, np.cos(theta_f)) # Final photon energy in Lab frame
+        photon_fin_rest = photon_in_rest * photon.compton_energy_ratio(photon_in_rest, np.cos(scattering_angle)) # Final photon energy in electron rest frame
+        photon_fin_lab = photon.inverse_lorentz_transform(photon_fin_rest, electron, np.cos(theta_f)) # Final photon energy in Lab frame
 
-        return photon_fin_lab, scattering_angle
+        return photon_fin_lab, photon_fin_rest, scattering_angle
 
 
 

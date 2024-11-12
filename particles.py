@@ -119,16 +119,15 @@ class Photon(Particle):
         enratio = self.compton_energy_ratio(x, mu)
         return (3 / (16 * np.pi)) * enratio ** 2 * (enratio + 1 / enratio + mu ** 2 - 1)
 
-    def sigma_tot_klein_nishina(self): # sigma / sigma_Thomson
-        x = self.energy
+    def sigma_tot_klein_nishina(self, x): # sigma / sigma_Thomson
         sigma_sigmaT = (3 / (8 * x)) * ((1 - 2 * (x + 1) / x ** 2) * np.log(1 + 2 * x) + 0.5 + 4 / x - 0.5 / (1 + 2 * x)**2) 
         return sigma_sigmaT
     
     def angle_prob_density(self, x, mu):
-        return 2 * np.pi * self.differential_cross_section(x, mu) / self.sigma_tot_klein_nishina()
+        return 2 * np.pi * self.differential_cross_section(x, mu) / self.sigma_tot_klein_nishina(x)
 
-    def sigma(self):
-        return sigma_Thomson * self.sigma_tot_klein_nishina()
+    def sigma(self, x):
+        return sigma_Thomson * self.sigma_tot_klein_nishina(x)
     
 
     def sample_angle(self, x): # generates scattering angle alpha from Klein-Nishina distribution
