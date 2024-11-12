@@ -94,23 +94,31 @@ class MonteCarloSimulation:
 
     def plot_coll_number_histogram(self):
         collisions = self.get_collisions()
-        cross_sections = self.cross_sections  # Assuming self.cross_sections is defined
+        cross_sections = self.cross_sections 
+        Ntot = len(collisions)
 
         fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
-        # Plot the collision number histogram
-        axs[0].hist(collisions, bins=40)
-        axs[0].vlines(np.mean(collisions), 0, 0.2 * len(collisions), color='red', label='Mean')
-        axs[0].vlines(max_tau ** 2, 0, 0.2 * len(collisions), color='green', label=r'$\tau_{max}^2$')
+        # Plot the collision number histogram with logarithmic bins, normalized to 1
+        log_bins = np.logspace(np.log10(min(collisions)), np.log10(max(collisions)), 30)
+        hist, bin_edges = np.histogram(collisions, bins=log_bins)
+        bin_widths = np.diff(bin_edges)
+        normalized_hist = hist / (Ntot * bin_widths)
+        axs[0].bar(bin_edges[:-1], normalized_hist, width=bin_widths, align='edge', alpha=0.6, color='r')
+        axs[0].vlines(np.mean(collisions), 0, max(normalized_hist), color='red', label='Mean')
+        axs[0].vlines(max_tau ** 2, 0, max(normalized_hist), color='green', label=r'$\tau_{max}^2$')
+        axs[0].set_xscale('log')
+        axs[0].set_yscale('log')
         axs[0].set_xlabel('Number of Collisions')
-        axs[0].set_ylabel('Frequency')
+        axs[0].set_ylabel('Probability density')
         axs[0].legend(loc='best')
         axs[0].set_title('Collision Number Histogram')
 
-        # Plot the cross-section histogram
-        axs[1].hist(cross_sections, bins=40, color='orange')
+        # Plot the cross-section histogram with linear bins, normalized to 1
+        hist, bin_edges = np.histogram(cross_sections, bins=40, density=True)
+        axs[1].hist(cross_sections, bins=40, density=True, alpha=0.6, color='orange')
         axs[1].set_xlabel(r'$\sigma/\sigma_T$')
-        axs[1].set_ylabel('Frequency')
+        axs[1].set_ylabel('Probability density')
         axs[1].set_title('Cross Section Histogram')
 
         plt.tight_layout()
@@ -152,31 +160,53 @@ class MonteCarloSimulation:
 
         # Plot the initial photon energy distribution + theoretical distribution
         initial_photon_energies = [generate_energy(self.photon_dist, **self.photon_dist_params) for _ in range(1000)]
-        axs[0, 0].hist(initial_photon_energies, bins=30, density=True, alpha=0.6, color='b', label=r'$f_{\gamma}(E_i)$')
-        energy_values = np.linspace(0, max(initial_photon_energies), 1000)
+        log_bins = np.logspace(np.log10(min(initial_photon_energies)), np.log10(max(initial_photon_energies)), 30)
+        hist, bin_edges = np.histogram(initial_photon_energies, bins=log_bins)
+        bin_widths = np.diff(bin_edges)
+        normalized_hist = hist / (1000 * bin_widths)
+        axs[0, 0].bar(bin_edges[:-1], normalized_hist, width=bin_widths, align='edge', alpha=0.6, color='b', label=r'$f_{\gamma}(E_i)$')
+        energy_values = np.linspace(min(initial_photon_energies), max(initial_photon_energies), 1000)
         theoretical_values = TheoreticalDistributions(energy_values, self.photon_dist, self.photon_dist_params).probability_density()
         axs[0, 0].plot(energy_values, theoretical_values, 'r-', label=r'$f_{\gamma, \text{th}}(E_i)$')
         axs[0, 0].set_xlabel(r'$\frac{E_K}{m_e c^2}$')
         axs[0, 0].set_ylabel('Probability density')
+        axs[0, 0].set_xscale('log')
+        axs[0, 0].set_yscale('log')
+        #axs[0, 0].set_xlim(0.9 * min(initial_photon_energies), 1.1 * max(initial_photon_energies))
         axs[0, 0].legend(loc='best')
         axs[0, 0].set_title('Initial Photon Energy Distribution')
+        
+        
 
         # Plot the electron energy distribution + theoretical distribution
         electron_energies = [generate_energy(self.electron_dist, **self.electron_dist_params) for _ in range(1000)]
-        axs[0, 1].hist(electron_energies, bins=30, density=True, alpha=0.6, color='r', label=r'$f_{e}(E)$')
-        energy_values = np.linspace(0, max(electron_energies), 1000)
+        log_bins = np.logspace(np.log10(min(electron_energies)), np.log10(max(electron_energies)), 30)
+        hist, bin_edges = np.histogram(electron_energies, bins=log_bins)
+        bin_widths = np.diff(bin_edges)
+        normalized_hist = hist / (1000 * bin_widths)
+        axs[0, 1].bar(bin_edges[:-1], normalized_hist, width=bin_widths, align='edge', alpha=0.6, color='b', label=r'$f_{e}(E)$')
+        energy_values = np.linspace(min(electron_energies), max(electron_energies), 1000)
         theoretical_values = TheoreticalDistributions(energy_values, self.electron_dist, self.electron_dist_params).probability_density()
-        axs[0, 1].plot(energy_values, theoretical_values, 'b-', label=r'$f_{e, \text{th}}(E)$')
+        axs[0, 1].plot(energy_values, theoretical_values, 'r-', label=r'$f_{e, \text{th}}(E)$')
         axs[0, 1].set_xlabel(r'$\frac{E_K}{m_e c^2}$')
         axs[0, 1].set_ylabel('Probability density')
+        axs[0, 1].set_xscale('log')
+        axs[0, 1].set_yscale('log')
+        #axs[0, 1].set_xlim(0.9 * min(electron_energies), 1.1 * max(electron_energies))
         axs[0, 1].legend(loc='best')
         axs[0, 1].set_title('Electron Energy Distribution')
 
         # Plot the sampled photon energy histogram
         energies = [photon.energy for photon in self.photons]
-        axs[1, 0].hist(energies, bins=30, density=True, alpha=0.6, color='g', label=r'$f_{\gamma}(E_f)$')
+        log_bins = np.logspace(np.log10(min(energies)), np.log10(max(energies)), 30)
+        hist, bin_edges = np.histogram(energies, bins=log_bins)
+        bin_widths = np.diff(bin_edges)
+        normalized_hist = hist / (self.num_photons * bin_widths)
+        axs[1, 0].bar(bin_edges[:-1], normalized_hist, width=bin_widths, align='edge', alpha=0.6, color='g', label=r'$f_{\gamma}(E_f)$')
         axs[1, 0].set_xlabel(r'$\frac{E_K}{m_e c^2}$')
         axs[1, 0].set_ylabel('Probability density')
+        axs[1, 0].set_xscale('log')
+        axs[1, 0].set_yscale('log')
         axs[1, 0].legend(loc='best')
         axs[1, 0].set_title('Final Photon Energy Spectrum')
 

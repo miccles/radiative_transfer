@@ -101,6 +101,7 @@ class Photon(Particle):
         x = self.energy
         sigma_sigmaT = (3 / (8 * x)) * ((1 - 2 * (x + 1) / x ** 2) * np.log(1 + 2 * x) + 0.5 + 4 / x - 0.5 / (1 + 2 * x)**2) 
         return sigma_sigmaT
+        #return 1
 
 
     def sigma(self):
