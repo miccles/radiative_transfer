@@ -23,9 +23,11 @@ class MonteCarloSimulation:
         self.electron_dist = electron_dist
         self.electron_dist_params = electron_dist_params
         self.photons = [Photon(self.photon_dist, **self.photon_dist_params) for _ in range(num_photons)]
-        for photon in self.photons:
-            if photon.energy < 10 ** (10):
-                print(f'Photon initilization, potential overflow')
+        # for photon in self.photons:
+        #     if photon.energy < 10 ** (-10):
+        #         print(f'Warning, energy = {photon.energy}')
+        #     else:
+        #         print(f'Photon Initilization, energy = {photon.energy}')
         self.tracked_photons = []
         self.select_random_photons(self.num_tracked_photons)
         self.cross_sections = []
@@ -33,8 +35,9 @@ class MonteCarloSimulation:
     def simulate(self):
         tracker = 0
         for photon in self.photons:
-            tracker += 1
-            print(f'Simulating photon {tracker}...')
+            # tracker += 1
+            # print('---------------------------------')
+            # print(f'Simulating photon {tracker}...')
             #Step 0: Initialize photons and move them to their initial positions
             r1, r2, r3 = np.random.random(3)
             tau = -np.log(r1)
@@ -57,7 +60,7 @@ class MonteCarloSimulation:
 
                 # Propagate the photon
                 photon.move(L, theta_photon_f, phi)
-            print(f'Photon {tracker} escaped. Ncollisions = {photon.collisions}, Energy = {photon.energy}')
+            #print(f'Photon {tracker} escaped. Ncollisions = {photon.collisions}, Energy = {photon.energy}')
 
     def calc_L_from_tau(self, photon, tau):
         sigma = photon.sigma()
@@ -66,15 +69,24 @@ class MonteCarloSimulation:
 
     def compton_scattering(self, photon):
         def en_final(en_ph_0, beta_el, en_el, theta_ph_fin, theta_el_in, theta_el_fin):
+            # print('..............')
+            # print(f'en_ph_0: {en_ph_0}')
+            # print(f'beta_el: {beta_el}')
+            # print(f'en_el: {en_el}')
+            # print(f'theta_ph_fin: {theta_ph_fin}')
+            # print(f'theta_el_in: {theta_el_in}')
+            # print(f'theta_el_fin: {theta_el_fin}')
             return en_ph_0 * (1 - beta_el * np.cos(theta_el_in)) / (1 - beta_el * np.cos(theta_el_fin) + en_ph_0 / en_el * (1 - np.cos(theta_ph_fin)))
         
         # Generate an electron from the electron distribution
         electron = Particle(me, qe, self.electron_dist, **self.electron_dist_params)
         energy_electron = electron.energy
-        if energy_electron < 10 ** (10):
-            print(f'Electron initilization, potential overflow')
-        if photon.energy < 10 ** (10):
-            print(f'Warning: photon energy={photon.energy}')
+        # if energy_electron < 10 ** (-10):
+        #     print(f'Electron initilization, potential overflow')
+        # if photon.energy < 10 ** (-100):
+        #     print(f'WARNING: extremely low photon energy')
+        # elif photon.energy < 10 ** (-10):
+        #     print(f'Warning: photon energy={photon.energy}')
         gamma_electron = energy_electron + 1
         beta_electron = np.sqrt(1 - 1 / gamma_electron**2)
 
@@ -209,6 +221,8 @@ class MonteCarloSimulation:
 
         # Plot the sampled photon energy histogram
         energies = [photon.energy for photon in self.photons]
+        energy_threshold = 10 ** (-5)
+        energies = [energy for energy in energies if energy > energy_threshold]
         log_bins = np.logspace(np.log10(min(energies)), np.log10(max(energies)), 30)
         hist, bin_edges = np.histogram(energies, bins=log_bins)
         bin_widths = np.diff(bin_edges)
