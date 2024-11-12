@@ -69,24 +69,11 @@ class MonteCarloSimulation:
 
     def compton_scattering(self, photon):
         def en_final(en_ph_0, beta_el, en_el, theta_ph_fin, theta_el_in, theta_el_fin):
-            # print('..............')
-            # print(f'en_ph_0: {en_ph_0}')
-            # print(f'beta_el: {beta_el}')
-            # print(f'en_el: {en_el}')
-            # print(f'theta_ph_fin: {theta_ph_fin}')
-            # print(f'theta_el_in: {theta_el_in}')
-            # print(f'theta_el_fin: {theta_el_fin}')
             return en_ph_0 * (1 - beta_el * np.cos(theta_el_in)) / (1 - beta_el * np.cos(theta_el_fin) + en_ph_0 / en_el * (1 - np.cos(theta_ph_fin)))
         
         # Generate an electron from the electron distribution
         electron = Particle(me, qe, self.electron_dist, **self.electron_dist_params)
         energy_electron = electron.energy
-        # if energy_electron < 10 ** (-10):
-        #     print(f'Electron initilization, potential overflow')
-        # if photon.energy < 10 ** (-100):
-        #     print(f'WARNING: extremely low photon energy')
-        # elif photon.energy < 10 ** (-10):
-        #     print(f'Warning: photon energy={photon.energy}')
         gamma_electron = energy_electron + 1
         beta_electron = np.sqrt(1 - 1 / gamma_electron**2)
 
@@ -191,16 +178,14 @@ class MonteCarloSimulation:
         energy_values = np.linspace(min(initial_photon_energies), max(initial_photon_energies), 1000)
         theoretical_values = TheoreticalDistributions(energy_values, self.photon_dist, self.photon_dist_params).probability_density()
         axs[0, 0].plot(energy_values, theoretical_values, 'r-', label=r'$f_{\gamma, \text{th}}(E_i)$')
-        axs[0, 0].set_xlabel(r'$\frac{E_K}{m_e c^2}$')
+        axs[0, 0].set_xlabel(r'$\frac{h\nu_i}{m_e c^2}$')
         axs[0, 0].set_ylabel('Probability density')
         axs[0, 0].set_xscale('log')
         axs[0, 0].set_yscale('log')
-        #axs[0, 0].set_xlim(0.9 * min(initial_photon_energies), 1.1 * max(initial_photon_energies))
         axs[0, 0].legend(loc='best')
         axs[0, 0].set_title('Initial Photon Energy Distribution')
         
-        
-
+    
         # Plot the electron energy distribution + theoretical distribution
         electron_energies = [generate_energy(self.electron_dist, **self.electron_dist_params) for _ in range(1000)]
         log_bins = np.logspace(np.log10(min(electron_energies)), np.log10(max(electron_energies)), 30)
@@ -228,7 +213,7 @@ class MonteCarloSimulation:
         bin_widths = np.diff(bin_edges)
         normalized_hist = hist / (self.num_photons * bin_widths)
         axs[1, 0].bar(bin_edges[:-1], normalized_hist, width=bin_widths, align='edge', alpha=0.6, color='g', label=r'$f_{\gamma}(E_f)$')
-        axs[1, 0].set_xlabel(r'$\frac{E_K}{m_e c^2}$')
+        axs[1, 0].set_xlabel(r'$\frac{h\nu_f}{m_e c^2}$')
         axs[1, 0].set_ylabel('Probability density')
         axs[1, 0].set_xscale('log')
         axs[1, 0].set_yscale('log')
