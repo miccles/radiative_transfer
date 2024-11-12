@@ -5,6 +5,7 @@ from parameters import *
 from functions import TheoreticalDistributions
 from particles import Photon, Particle, generate_energy
 
+
 class MonteCarloSimulation:
     def __init__(
                 self, num_photons, num_tracked_photons,
@@ -22,13 +23,19 @@ class MonteCarloSimulation:
         self.electron_dist = electron_dist
         self.electron_dist_params = electron_dist_params
         self.photons = [Photon(self.photon_dist, **self.photon_dist_params) for _ in range(num_photons)]
+        for photon in self.photons:
+            if photon.energy < 10 ** (10):
+                print(f'Photon initilization, potential overflow')
         self.tracked_photons = []
         self.select_random_photons(self.num_tracked_photons)
         self.cross_sections = []
 
     def simulate(self):
+        tracker = 0
         for photon in self.photons:
-            # Step 0: Initialize photons and move them to their initial positions
+            tracker += 1
+            print(f'Simulating photon {tracker}...')
+            #Step 0: Initialize photons and move them to their initial positions
             r1, r2, r3 = np.random.random(3)
             tau = -np.log(r1)
             L = self.calc_L_from_tau(photon, tau)
@@ -50,7 +57,7 @@ class MonteCarloSimulation:
 
                 # Propagate the photon
                 photon.move(L, theta_photon_f, phi)
-
+            print(f'Photon {tracker} escaped. Ncollisions = {photon.collisions}, Energy = {photon.energy}')
 
     def calc_L_from_tau(self, photon, tau):
         sigma = photon.sigma()
@@ -64,6 +71,10 @@ class MonteCarloSimulation:
         # Generate an electron from the electron distribution
         electron = Particle(me, qe, self.electron_dist, **self.electron_dist_params)
         energy_electron = electron.energy
+        if energy_electron < 10 ** (10):
+            print(f'Electron initilization, potential overflow')
+        if photon.energy < 10 ** (10):
+            print(f'Warning: photon energy={photon.energy}')
         gamma_electron = energy_electron + 1
         beta_electron = np.sqrt(1 - 1 / gamma_electron**2)
 

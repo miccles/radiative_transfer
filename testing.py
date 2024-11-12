@@ -1,80 +1,58 @@
+import warnings
 import numpy as np
-import matplotlib.pyplot as plt
+from monte_carlo_sim import MonteCarloSimulation
 from parameters import *
-from particles import generate_energy
 from functions import TheoreticalDistributions
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 
-def en_final(en_ph_0, beta_el, en_el, theta_ph_fin, theta_el_in, theta_el_fin):
-    return en_ph_0 * (1 - beta_el * np.cos(theta_el_in)) / (1 - beta_el * np.cos(theta_el_fin) + en_ph_0 / en_el * (1 - np.cos(theta_ph_fin)))
+# def sample_blackbody(theta_g):
+#     def wien_peak_energy(theta_g):
+#         temp_kelvin = theta_g * mec2_eV / kB
+#         hv_peak = 2.4315 * 10 ** (-4) * temp_kelvin / mec2_eV  # returns peak energy in me * c^2 units
+#         return hv_peak
+#     while True:
+#         print('______attempting _____')
+#         print(f'wien_peak:{wien_peak_energy(theta_g)}')
+#         en_rand = np.random.uniform(10 ** (-5), 10 ** 1) * wien_peak_energy(theta_g)
+#         print(f'en_rand: {en_rand}')
+#         max_loc = 2.82144 * theta_g
+#         dist_max = TheoreticalDistributions(max_loc, 'blackbody', {'theta_g': theta_g}).probability_density()
+#         print(f'dist_max: {dist_max}')
+#         dist = TheoreticalDistributions(en_rand, 'blackbody', {'theta_g': theta_g}).probability_density()
+#         print(f'dist: {dist}')
+#         if np.random.random() < dist / dist_max:
+#             return en_rand
+        
 
-# Parameters for the distributions
-photon_dist = 'blackbody'
-photon_dist_params = {'theta_g': 0.01}
+# energy = sample_blackbody(0.01)
+# print(energy)
+# probability = TheoreticalDistributions(energy, 'blackbody', {'theta_g': 0.01}).probability_density()
 
-electron_dist = 'powerlaw'
-electron_dist_params = {'alpha': 1.2, 'E_min': 0.15, 'E_max': 0.5}
+import sys
+import warnings
 
-# Generate blackbody distribution energies for en_ph_0
-num_samples = 10000
-photon_energies = [generate_energy(photon_dist, **photon_dist_params) for _ in range(num_samples)]
+# 1. Open the output file in write mode
+output_file = open('output.txt', 'w')
 
-# Generate power law distribution energies for electrons
-electron_energies = [generate_energy(electron_dist, **electron_dist_params) for _ in range(num_samples)]
-gamma_electrons = [en + 1 for en in electron_energies]
-beta_electrons = [np.sqrt(1 - 1 / gamma**2) for gamma in gamma_electrons]
+# 2. Redirect stdout (print statements) and stderr (errors) to the output file
+sys.stdout = output_file
+sys.stderr = output_file
 
-# Generate random theta values
-theta_ph_fin = np.arccos(2 * np.random.random(num_samples) - 1)
-theta_el_in = np.arccos(2 * np.random.random(num_samples) - 1)
-theta_el_fin = np.arccos(2 * np.random.random(num_samples) - 1)
+# 3. Redirect warnings to the output file
+warnings.simplefilter("always")  # Show all warnings
+warnings.showwarning = lambda message, category, filename, lineno, file=None, line=None: \
+    print(f"{filename}:{lineno}: {category.__name__}: {message}")
 
-# Calculate the final photon energies using en_final
-final_photon_energies = [en_final(en_ph_0, beta_el, en_el, theta_ph_fin[i], theta_el_in[i], theta_el_fin[i])
-                         for i, (en_ph_0, beta_el, en_el) in enumerate(zip(photon_energies, beta_electrons, electron_energies))]
+# Example prints, warnings, and errors
+print("This is a print statement.")
 
-# Plot histograms of the photon energies before and after the calculation
-fig, ax = plt.subplots(figsize=(12, 6))
+warnings.warn("This is a warning.")
 
-# Define logarithmic bins
-log_bins = np.logspace(np.log10(min(photon_energies + final_photon_energies)), np.log10(max(photon_energies + final_photon_energies)), 40)
+try:
+    1 / 0  # This will raise an error
+except ZeroDivisionError as e:
+    print(f"Error: {e}")
 
-# Histogram of initial photon energies
-hist, bin_edges = np.histogram(photon_energies, bins=log_bins)
-bin_widths = np.diff(bin_edges)
-normalized_hist = hist / (1 * bin_widths)
-ax.step(bin_edges[:-1], normalized_hist, where='mid', alpha=0.6, color='b', label='Initial Photon Energies')
-
-# Histogram of final photon energies
-hist, bin_edges = np.histogram(final_photon_energies, bins=log_bins)
-bin_widths = np.diff(bin_edges)
-normalized_hist = hist / (1 * bin_widths)
-ax.step(bin_edges[:-1], normalized_hist, where='mid', alpha=0.6, color='r', label='Final Photon Energies')
-
-# Repeat the process N times
-N = 10
-for n in range(N):
-    # Generate new random theta values
-    theta_ph_fin = np.arccos(2 * np.random.random(num_samples) - 1)
-    theta_el_in = np.arccos(2 * np.random.random(num_samples) - 1)
-    theta_el_fin = np.arccos(2 * np.random.random(num_samples) - 1)
-
-    # Calculate the final photon energies using en_final
-    final_photon_energies = [en_final(en_ph_0, beta_el, en_el, theta_ph_fin[i], theta_el_in[i], theta_el_fin[i])
-                             for i, (en_ph_0, beta_el, en_el) in enumerate(zip(final_photon_energies, beta_electrons, electron_energies))]
-
-    # Add the histogram of the final photon energies
-    hist, bin_edges = np.histogram(final_photon_energies, bins=log_bins)
-    bin_widths = np.diff(bin_edges)
-    normalized_hist = hist / (1 * bin_widths)
-    ax.step(bin_edges[:-1], normalized_hist, where='mid', alpha=0.6, label=f'Final Photon Energies (Iteration {n+1})')
-
-ax.set_xscale('log')
-ax.set_yscale('log')
-ax.set_xlabel(r'$\frac{E_K}{m_e c^2}$')
-ax.set_ylabel('Probability density')
-ax.legend(loc='best')
-ax.set_title('Photon Energy Distribution Before and After Calculation')
-
-plt.tight_layout()
-plt.show()
-
+# 4. Close the file after you're done
+output_file.close()

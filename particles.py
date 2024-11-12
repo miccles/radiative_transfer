@@ -42,7 +42,8 @@ def sample_maxwell_juttner(theta, gamma_max):
     gamma_initial_guess = 1 + theta  # Initial guess for gamma
     gamma_max = newton(func, gamma_initial_guess, args=(theta,))
     while True:
-        gamma_rand = np.random.uniform(1, gamma_max)
+        gamma_limit = 1 + 24.158 * theta ** 0.9478
+        gamma_rand = np.random.uniform(1, gamma_limit)
         dist = TheoreticalDistributions.maxwell_juttner(gamma_rand - 1, theta)
         dist_max = TheoreticalDistributions.maxwell_juttner(gamma_max - 1, theta)
         if np.random.random() < dist / dist_max:
@@ -55,7 +56,7 @@ def sample_blackbody(theta_g):
         hv_peak = 2.4315 * 10 ** (-4) * temp_kelvin / mec2_eV  # returns peak energy in me * c^2 units
         return hv_peak
     while True:
-        en_rand = np.random.uniform(10 ** (-5), 10 ** 3) * wien_peak_energy(theta_g)
+        en_rand = np.random.uniform(10 ** (-5), 10 ** 1) * wien_peak_energy(theta_g)
         max_loc = 2.82144 * theta_g
         dist_max = TheoreticalDistributions(max_loc, 'blackbody', {'theta_g': theta_g}).probability_density()
         dist = TheoreticalDistributions(en_rand, 'blackbody', {'theta_g': theta_g}).probability_density()
@@ -99,9 +100,10 @@ class Photon(Particle):
 
     def sigma_klein_nishina(self): # sigma / sigma_Thomson
         x = self.energy
+        # if x < 10 ** (-20):
+        #     print(f'Warning: energy={x}')
         sigma_sigmaT = (3 / (8 * x)) * ((1 - 2 * (x + 1) / x ** 2) * np.log(1 + 2 * x) + 0.5 + 4 / x - 0.5 / (1 + 2 * x)**2) 
         return sigma_sigmaT
-        #return 1
 
 
     def sigma(self):
