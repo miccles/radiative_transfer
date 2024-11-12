@@ -65,7 +65,6 @@ class TheoreticalDistributions: # Returns probability densities normalized to 1
         return (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mean) / std) ** 2)
 
     def monoenergetic(self):
-        pass
-    #     x = self.energy
-    #     std = 1e-6  # Very small standard deviation to simulate a delta function
-    #     return (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - energy) / std) ** 2)
+        x = self.energy
+        energy = self.args.get('energy')
+        return [energy] * len(self.energy)
