@@ -54,6 +54,7 @@ for x in xvalues:
     thetas = np.arccos(mu)
     y = prob_density(x, mu)
     plt.plot(thetas, y, label=f'x = {x}')
+    plt.plot(-thetas, y, color=plt.gca().lines[-1].get_color())
 
 plt.xlabel(r'$\theta_f$', fontsize=14)
 plt.ylabel('Probability Density', fontsize=14)

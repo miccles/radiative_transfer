@@ -62,6 +62,11 @@ def sample_blackbody(theta_g):
         dist = TheoreticalDistributions(en_rand, 'blackbody', {'theta_g': theta_g}).probability_density()
         if np.random.random() < dist / dist_max:
             return en_rand
+        
+
+def sample_angle(): # generates scattering angle alpha from Klein-Nishina distribution
+    # from alpha we get theta_f = theta_i - alpha
+    pass
 
 class Particle:
     def __init__(self, mass, charge, energy_dist, **dist_params):
@@ -93,7 +98,6 @@ class Photon(Particle):
             self.trajectory.append((self.x, self.y, self.z))
         self.collisions += 1
     
-
     def energy_to_wavelength(self):
         return lambda_db / self.energy
     
@@ -104,7 +108,7 @@ class Photon(Particle):
         en_photon_prime = gamma * en_photon * (1 - beta * mu)
         return en_photon_prime
 
-    def inverse_lorentz_transform(self, en_photon_prime, electron, mu): # From electron frame to lab frame
+    def inverse_lorentz_transform(self, en_photon_prime, electron, mu): # From electron rest frame to lab frame
         gamma = 1 + electron.energy # Lab frame
         beta = np.sqrt(1 - 1 / gamma ** 2) # Lab frame
         en_photon = gamma * en_photon_prime * (1 + beta * mu) # Lab frame
@@ -126,10 +130,6 @@ class Photon(Particle):
     def angle_prob_density(self, x, mu):
         return 2 * np.pi * self.differential_cross_section(x, mu) / self.sigma_tot_klein_nishina()
 
-
     def sigma(self):
         return sigma_Thomson * self.sigma_tot_klein_nishina()
-
-    def compton_scatter(self, angle):  # returns the energy of the scattered photon in me * c^2 units # angle in radians
-        return self.energy / (1 + self.energy * (1 - np.cos(angle)))
 

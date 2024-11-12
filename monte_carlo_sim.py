@@ -22,12 +22,8 @@ class MonteCarloSimulation:
         self.photon_dist_params = photon_dist_params
         self.electron_dist = electron_dist
         self.electron_dist_params = electron_dist_params
+        # Generate photons and energies in Lab frame #
         self.photons = [Photon(self.photon_dist, **self.photon_dist_params) for _ in range(num_photons)]
-        # for photon in self.photons:
-        #     if photon.energy < 10 ** (-10):
-        #         print(f'Warning, energy = {photon.energy}')
-        #     else:
-        #         print(f'Photon Initilization, energy = {photon.energy}')
         self.tracked_photons = []
         self.select_random_photons(self.num_tracked_photons)
         self.cross_sections = []
@@ -68,24 +64,23 @@ class MonteCarloSimulation:
     
 
     def compton_scattering(self, photon):
-        def en_final(en_ph_0, beta_el, en_el, theta_ph_fin, theta_el_in, theta_el_fin):
-            return en_ph_0 * (1 - beta_el * np.cos(theta_el_in)) / (1 - beta_el * np.cos(theta_el_fin) + en_ph_0 / en_el * (1 - np.cos(theta_ph_fin)))
-        
         # Generate an electron from the electron distribution
         electron = Particle(me, qe, self.electron_dist, **self.electron_dist_params)
-        energy_electron = electron.energy
-        gamma_electron = energy_electron + 1
-        beta_electron = np.sqrt(1 - 1 / gamma_electron**2)
+        # gamma_electron = electron.energy + 1 # Electron energy (gamma) in Lab frame
+        # beta_electron = np.sqrt(1 - 1 / gamma_electron**2)
 
-        # Generate angles from an isotropic distribution
-        r1, r2, r3 = np.random.random(3)
-        theta_el_in = np.arccos(2 * r1 - 1)
-        theta_el_fin = np.arccos(2 * r2 - 1)
-        theta_photon_f = np.arccos(2 * r3 - 1)
+        # Generate one random number for mu #
+        mu = 2 * np.random.random() - 1
+        photon_in_prime = photon.lorentz_transform(electron, mu) # Initial photon energy in electron rest frame
+        
+        
+        
+        
+        photon_fin_prime = 1
+        
+        return
 
-        # Calculate the final energy of the photon
-        en_photon_f = en_final(photon.energy, beta_electron, energy_electron, theta_photon_f, theta_el_in, theta_el_fin)
-        return en_photon_f, theta_photon_f
+
 
     def is_inside_sphere(self, photon):
         return photon.x**2 + photon.y**2 + photon.z**2 < self.R**2
